@@ -1,0 +1,47 @@
+name: Build Project Jar
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: "Project to build (projectA or projectB)"
+        required: true
+        default: "projectA"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Java
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11 # Adjust this to your project's Java version
+          distribution: 'temurin'
+
+      # Build the selected project
+      - name: Build Project
+        run: |
+          if [ "${{ github.event.inputs.project_name }}" = "projectA" ]; then
+            cd projectA
+          elif [ "${{ github.event.inputs.project_name }}" = "projectB" ]; then
+            cd projectB
+          else
+            echo "Invalid project name: ${{ github.event.inputs.project_name }}"
+            exit 1
+          fi
+          mvn clean package
+
+      # Upload the jar as an artifact
+      - name: Upload JAR file
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.inputs.project_name }}-jar
+          path: |
+            projectA/target/*.jar
+            projectB/target/*.jar

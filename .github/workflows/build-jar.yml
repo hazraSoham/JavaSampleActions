@@ -6,7 +6,10 @@ on:
       project_name:
         description: "Project to build (projectA or projectB)"
         required: true
-        default: "projectA"
+        type: choice
+        options:
+        - projectA
+        - projectB
 
 jobs:
   build:

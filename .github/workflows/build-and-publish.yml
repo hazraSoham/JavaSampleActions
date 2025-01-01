@@ -1,4 +1,4 @@
-name: Build Project Jar
+name: Build and Publish maven package
 
 on:
   workflow_dispatch:
@@ -12,17 +12,20 @@ on:
         - projectA
         - projectB
       release_option:
-        description: "Choose action: 'Release' to save JAR for later use, 'None' for only build and test"
+        description: "Choose Action"
         required: true
-        default: "None"
+        default: "NONE"
         type: choice
         options:
-          - Release
-          - None
+          - RELEASE
+          - DRY_RUN
+          - NONE
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       # Checkout the repository
@@ -30,11 +33,12 @@ jobs:
         uses: actions/checkout@v4
 
       # Set up Java
-      - name: Set up JDK
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: 21 # Adjust to your Java version
           distribution: 'temurin'
+          cache: maven
 
       # Validate project_name input
       - name: Validate Project Input
@@ -49,27 +53,18 @@ jobs:
       - name: Build and Test Project
         run: |
           cd ${{ github.event.inputs.project_name }}
-          mvn clean package test
+          mvn -f pom.xml clean --also-make-dependents install
+      
+      # Release jar
+      - name: Conditional Release
+        if: ${{ github.event.inputs.release_option == 'RELEASE' }}
+        run: echo "Releasing the built JAR file"
 
-      # Create a Release (only if Release option is chosen)
-      - name: Create GitHub Release
+      # Upload the JAR as an artifact if release_option is 'Release'
+      - name: Upload JAR file
         if: ${{ github.event.inputs.release_option == 'Release' }}
-        id: create_release
-        uses: actions/create-release@v1
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.event.inputs.project_name }}-v1.0
-          release_name: ${{ github.event.inputs.project_name }} Release
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Upload JAR to Release
-      - name: Upload JAR to Release
-        if: ${{ github.event.inputs.release_option == 'Release' }}
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.event.inputs.project_name }}/target/*.jar
-          asset_name: ${{ github.event.inputs.project_name }}.jar
-          asset_content_type: application/java-archive
+          name: ${{ github.event.inputs.project_name }}-jar
+          path: ${{ github.event.inputs.project_name }}/target/*.jar
+      

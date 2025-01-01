@@ -119,11 +119,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            release_id=$(gh api repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} --jq '.id')
-            assets=$(gh api repos/${{ github.repository }}/releases/$release_id/assets --jq '.[] | select(.name | test("source")) | .id')
-            for asset_id in $assets; do
-            gh api repos/${{ github.repository }}/releases/assets/$asset_id -X DELETE
-            done
+          gh release delete-asset Latest 'Source Code.zip' -y
   
       - name: Update to next development version
         if: ${{ github.event.inputs.build_type == 'RELEASE' }}

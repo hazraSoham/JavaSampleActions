@@ -116,6 +116,8 @@ jobs:
         
       - name: Clean Release
         if: ${{ github.event.inputs.build_type == 'RELEASE' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
             release_id=$(gh api repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} --jq '.id')
             assets=$(gh api repos/${{ github.repository }}/releases/$release_id/assets --jq '.[] | select(.name | test("source")) | .id')

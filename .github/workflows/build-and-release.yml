@@ -88,7 +88,7 @@ jobs:
           
           # Commit release version
           git add pom.xml
-          git commit -m "Prepare release version $NEW_VERSION"
+          git commit -m "Prepare ${{ github.event.inputs.project }} release version $NEW_VERSION"
           git push
 
       - name: Build Release Artifact
@@ -124,5 +124,5 @@ jobs:
             
             # Commit next development version
             git add pom.xml
-            git commit -m "Prepare for next development version ${{ env.NEXT_DEV_VERSION }}"
+            git commit -m "Prepare ${{ github.event.inputs.project }} for next development version ${{ env.NEXT_DEV_VERSION }}"
             git push

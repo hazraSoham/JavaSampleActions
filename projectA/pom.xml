@@ -4,7 +4,7 @@
 
   <groupId>com.mycompany.projectA</groupId>
   <artifactId>projectA</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
 
   <name>projectA</name>
   <!-- FIXME change it to the project's website -->
@@ -14,7 +14,7 @@
     <connection>scm:git:git://github.com/hazraSoham/JavaSampleActions.git</connection>
     <developerConnection>scm:git:https://github.com/hazraSoham/JavaSampleActions.git</developerConnection>
     <url>https://github.com/hazraSoham/JavaSampleActions</url>
-    <tag>HEAD</tag>
+    <tag>1.2</tag>
   </scm>
 
   <properties>

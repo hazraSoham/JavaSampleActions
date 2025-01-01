@@ -40,29 +40,32 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Validate project_name input
-      - name: Validate Project Input
+      # Configure Git for GITHUB_TOKEN
+      - name: Configure Git
         run: |
-          if [ "${{ github.event.inputs.project_name }}" != "projectA" ] && [ "${{ github.event.inputs.project_name }}" != "projectB" ]; then
-            echo "Invalid project name: ${{ github.event.inputs.project_name }}"
-            echo "Please select either 'projectA' or 'projectB'."
-            exit 1
-          fi
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+      
+      # Perform Maven Release if Release option is selected
+      - name: Perform Maven Release
+        if: ${{ github.event.inputs.release_option == 'RELEASE' }}
+        run: |
+          cd ${{ github.event.inputs.project_name }}
+          mvn release:clean release:prepare release:perform -B
+
 
       # Build and Test the selected project
       - name: Build and Test Project
+        if: ${{ github.event.inputs.release_option == 'NONE' }}
         run: |
           cd ${{ github.event.inputs.project_name }}
           mvn -f pom.xml clean --also-make-dependents install
       
-      # Release jar
-      - name: Conditional Release
-        if: ${{ github.event.inputs.release_option == 'RELEASE' }}
-        run: echo "Releasing the built JAR file"
-
+          
       # Upload the JAR as an artifact if release_option is 'Release'
       - name: Upload JAR file
-        if: ${{ github.event.inputs.release_option == 'Release' }}
+        if: ${{ github.event.inputs.release_option == 'RELEASE' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.inputs.project_name }}-jar

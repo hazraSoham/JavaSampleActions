@@ -13,8 +13,9 @@
 
   <scm>
     <connection>scm:git:git://github.com/hazraSoham/JavaSampleActions.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/hazraSoham/JavaSampleActions.git</developerConnection>
+    <developerConnection>scm:git:https://github.com/hazraSoham/JavaSampleActions.git</developerConnection>
     <url>https://github.com/hazraSoham/JavaSampleActions</url>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>

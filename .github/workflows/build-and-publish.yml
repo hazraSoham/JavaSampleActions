@@ -62,7 +62,7 @@ jobs:
           cd ${{ github.event.inputs.project_name }}
           mvn -f pom.xml clean --also-make-dependents install
       
-          
+
       # Upload the JAR as an artifact if release_option is 'Release'
       - name: Upload JAR file
         if: ${{ github.event.inputs.release_option == 'RELEASE' }}

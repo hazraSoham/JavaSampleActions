@@ -67,7 +67,7 @@ jobs:
         if: ${{ github.event.inputs.release_option == 'RELEASE' }}
         run: |
           cd ${{ github.event.inputs.project_name }}
-          mvn release:clean release:prepare release:perform -B
+          mvn release:clean release:prepare -B
 
 
       # Build and Test the selected project

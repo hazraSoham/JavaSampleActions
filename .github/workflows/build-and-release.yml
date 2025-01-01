@@ -115,7 +115,7 @@ jobs:
             --target ${{ github.sha }}
         
       - name: Clean Release
-        if: ${{ github.event.inputs.release_option == 'RELEASE' }}
+        if: ${{ github.event.inputs.build_type == 'RELEASE' }}
         run: |
             release_id=$(gh api repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} --jq '.id')
             assets=$(gh api repos/${{ github.repository }}/releases/$release_id/assets --jq '.[] | select(.name | test("source")) | .id')

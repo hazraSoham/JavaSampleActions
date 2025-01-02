@@ -74,6 +74,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Configure Git user
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+
       - name: Get Current Version
         id: version
         run: |
@@ -92,7 +97,7 @@ jobs:
             NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
           fi
           
-          echo "release_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "release_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "next_dev_version=$NEW_VERSION-SNAPSHOT" >> $GITHUB_OUTPUT
 
       - name: Download Artifact
@@ -101,11 +106,7 @@ jobs:
           name: ${{ github.event.inputs.project }}-artifact
           path: artifacts
 
-      - name: Configure Git user
-        run: |
-          git config user.email "github-actions@github.com"
-          git config user.name "GitHub Actions"
-
+          
       - name: Update Version for Release
         run: |
           cd ${{ github.event.inputs.project }}
@@ -115,12 +116,6 @@ jobs:
           git commit -m "Prepare release version ${{ steps.version.outputs.release_version }}"
           git push
 
-      - name: Install GitHub CLI
-        run: |
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update
-          sudo apt install gh -y
 
       - name: Create Release and Handle Latest Tag
         env:

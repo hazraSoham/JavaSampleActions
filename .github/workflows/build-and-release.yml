@@ -26,10 +26,38 @@ on:
           - MAJOR
           - MINOR
           - PATCH
-        default: 'PATCH'
+        default: 'MINOR'
 
 jobs:
   build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build project
+        run: |
+          cd ${{ github.event.inputs.project }}
+          mvn clean package -Dmaven.install.skip=true -Dmaven.source.skip=true -Dmaven.javadoc.skip=true
+
+      - name: Upload Artifact
+        if: ${{ github.event.inputs.build_type == 'RELEASE' && success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.inputs.project }}-artifact
+          path: ${{ github.event.inputs.project }}/target/*.jar
+          retention-days: 1
+
+  release:
+    needs: build
+    if: ${{ github.event.inputs.build_type == 'RELEASE' && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -40,32 +68,19 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'
           distribution: 'temurin'
-          cache: 'maven'
 
-      - name: Configure Git user
-        if: ${{ github.event.inputs.build_type == 'RELEASE' }}
-        run: |
-          git config user.email "github-actions@github.com"
-          git config user.name "GitHub Actions"
-
-      - name: Build project
-        run: |
-          cd ${{ github.event.inputs.project }}
-          mvn clean verify
-
-      - name: Prepare Release
-        if: ${{ github.event.inputs.build_type == 'RELEASE' }}
+      - name: Get Current Version
+        id: version
         run: |
           cd ${{ github.event.inputs.project }}
           # Get current version (removing -SNAPSHOT if present)
           CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           CURRENT_VERSION=${CURRENT_VERSION%-SNAPSHOT}
-          echo "Current version: $CURRENT_VERSION"
           
           # Calculate new version based on version type
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
@@ -76,43 +91,51 @@ jobs:
           else
             NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
           fi
-          echo "New version: $NEW_VERSION"
           
-          # Store versions in environment
-          echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          echo "NEXT_DEV_VERSION=$NEW_VERSION-SNAPSHOT" >> $GITHUB_ENV
-          
-          # First set the release version (without SNAPSHOT)
-          mvn versions:set -DnewVersion=$NEW_VERSION
-          mvn versions:commit
-          
-          # Commit release version
-          git add pom.xml
-          git commit -m "Prepare ${{ github.event.inputs.project }} release version $NEW_VERSION"
-          git push
+          echo "release_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "next_dev_version=$NEW_VERSION-SNAPSHOT" >> $GITHUB_OUTPUT
 
-      - name: Build Release Artifact
-        if: ${{ github.event.inputs.build_type == 'RELEASE' }}
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.event.inputs.project }}-artifact
+          path: artifacts
+
+      - name: Configure Git user
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+
+      - name: Update Version for Release
         run: |
           cd ${{ github.event.inputs.project }}
-          mvn clean package
-          echo "JAR_FILE=$(find target/ -name '*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -exec basename {} \;)" >> $GITHUB_ENV
-          echo "JAR_PATH=$(find target/ -name '*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar')" >> $GITHUB_ENV
+          mvn versions:set -DnewVersion=${{ steps.version.outputs.release_version }}
+          mvn versions:commit
+          git add pom.xml
+          git commit -m "Prepare release version ${{ steps.version.outputs.release_version }}"
+          git push
 
-      - name: Create Release and Upload Asset
-        if: ${{ github.event.inputs.build_type == 'RELEASE' }}
+      - name: Install GitHub CLI
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Create Release and Handle Latest Tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Set variables
-          RELEASE_TAG="${{ github.event.inputs.project }}-v${{ env.RELEASE_VERSION }}"
+          RELEASE_TAG="${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}"
           LATEST_TAG="${{ github.event.inputs.project }}-latest"
+          JAR_PATH=$(find artifacts -name '*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar')
           
           echo "Creating version release..."
           gh release create "$RELEASE_TAG" \
-            "${{ github.event.inputs.project }}/${{ env.JAR_PATH }}" \
-            --title "${{ github.event.inputs.project }} v${{ env.RELEASE_VERSION }}" \
-            --notes "Release of ${{ github.event.inputs.project }} version ${{ env.RELEASE_VERSION }}
+            "$JAR_PATH" \
+            --title "${{ github.event.inputs.project }} v${{ steps.version.outputs.release_version }}" \
+            --notes "Release of ${{ github.event.inputs.project }} version ${{ steps.version.outputs.release_version }}
 
             This release was automatically generated by GitHub Actions.
             
@@ -121,39 +144,31 @@ jobs:
             --target ${{ github.sha }}
           
           echo "Handling latest tag..."
-          # Delete remote latest tag if it exists
           if gh release view "$LATEST_TAG" &>/dev/null; then
             gh release delete "$LATEST_TAG" --yes
           fi
           
-          # Delete local latest tag if it exists
           git tag -d "$LATEST_TAG" || true
-          
-          # Create and push new latest tag
           git tag "$LATEST_TAG" ${{ github.sha }}
           git push origin "$LATEST_TAG" --force
           
           echo "Creating latest release..."
           gh release create "$LATEST_TAG" \
-            "${{ github.event.inputs.project }}/${{ env.JAR_PATH }}" \
+            "$JAR_PATH" \
             --title "${{ github.event.inputs.project }} (Latest Release)" \
-            --notes "This is the latest release of ${{ github.event.inputs.project }} (v${{ env.RELEASE_VERSION }}).
+            --notes "This is the latest release of ${{ github.event.inputs.project }} (v${{ steps.version.outputs.release_version }}).
             
             This is an automatically updated reference to the latest version.
             For the specific version release, see:
             https://github.com/${{ github.repository }}/releases/tag/$RELEASE_TAG" \
             --target ${{ github.sha }}
 
-  
       - name: Update to next development version
-        if: ${{ github.event.inputs.build_type == 'RELEASE' }}
+        if: success()
         run: |
-            cd ${{ github.event.inputs.project }}
-            # Set the next development version (with SNAPSHOT)
-            mvn versions:set -DnewVersion=${{ env.NEXT_DEV_VERSION }}
-            mvn versions:commit
-            
-            # Commit next development version
-            git add pom.xml
-            git commit -m "Prepare ${{ github.event.inputs.project }} for next development version ${{ env.NEXT_DEV_VERSION }}"
-            git push
+          cd ${{ github.event.inputs.project }}
+          mvn versions:set -DnewVersion=${{ steps.version.outputs.next_dev_version }}
+          mvn versions:commit
+          git add pom.xml
+          git commit -m "Prepare for next development version ${{ steps.version.outputs.next_dev_version }}"
+          git push

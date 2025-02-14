@@ -106,7 +106,7 @@ jobs:
 
       - name: Create Release
         env:
-          GITHUB TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
             #Set variables
             RELEASE_TAG="Scripts-${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}"

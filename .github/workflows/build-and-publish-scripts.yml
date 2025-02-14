@@ -76,7 +76,6 @@ jobs:
         id: version
         run: |
             latest_tag=$(git describe --tags --match "Scripts-ScriptsA-v*" --abbrev=0 2>/dev/null || echo "Scripts-ScriptsA-v0.0.0")
-            cd ${{ github.event.inputs.project }}
 
             # Get current version (removing -SNAPSHOT if present)
             CURRENT_VERSION=$(echo "$latest_tag" | sed -e 's/^Scripts-${{ github.event.inputs.project }}-v//')

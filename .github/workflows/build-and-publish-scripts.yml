@@ -93,8 +93,8 @@ jobs:
             
       - name: ZIP artifact for deployment
         run: |
-          cd Scripts/${{ github.event.inputs.project }}
-          zip -r Scripts-${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}.zip ./*
+          cd Scripts
+          zip -r Scripts-${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}.zip ./${{ github.event.inputs.project }}
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4

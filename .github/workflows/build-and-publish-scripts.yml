@@ -89,7 +89,7 @@ jobs:
             else
               NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
             fi
-            echo "release_version-$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "release_version=$NEW_VERSION" >> $GITHUB_OUTPUT
             
       - name: ZIP artifact for deployment
         run: |

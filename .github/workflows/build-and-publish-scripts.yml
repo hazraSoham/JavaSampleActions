@@ -93,13 +93,14 @@ jobs:
             
       - name: ZIP artifact for deployment
         run: |
-          zip -r Scripts-${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}.zip Scripts/${{ github.event.inputs.project }}
+            cd Scripts/${{ github.event.inputs.project }}
+            zip -r ../../${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}.zip ./*
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
-          name: Scripts-${{ github.event.inputs.project }}-artifact
-          path: Scripts-${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}.zip
+          name: ${{ github.event.inputs.project }}-artifact
+          path: ${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}.zip
           retention-days: 1
 
       - name: Create Release
@@ -150,3 +151,4 @@ jobs:
                 
               For the specific version release, see:
               https://github.com/${{ github.repository }}/releases/tag/$RELEASE_TAG"
+

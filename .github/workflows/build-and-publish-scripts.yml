@@ -1,11 +1,11 @@
 name: Build and Zip scripts
 
-# For CodeQL Analysis
-# permissions:
-#   security-events: write
-#   actions: read
-#   contents: read
-
+permissions:
+  contents: write      # Required for creating releases and tags
+  packages: write      # Required for uploading artifacts
+  issues: write        # Required for creating release notes
+  actions: read        # Required for workflow operations
+  security-events: write 
 
 on:
   workflow_dispatch:

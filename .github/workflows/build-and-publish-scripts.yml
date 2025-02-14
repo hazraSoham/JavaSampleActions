@@ -110,7 +110,7 @@ jobs:
             # Set variables
             RELEASE_TAG="Scripts-${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}"
             LATEST_TAG="Scripts-${{ github.event.inputs.project }}-latest"
-            ZIP_PATH="Scripts-${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}.zip"
+            ZIP_PATH="Scripts/${{ github.event.inputs.project }}/Scripts-${{ github.event.inputs.project }}-v${{ steps.version.outputs.release_version }}.zip"
             
             # Create the release tag first
             git tag "$RELEASE_TAG"

@@ -157,7 +157,7 @@ jobs:
 
               ### 🔗 Specific Version Release  
               For details on this version, visit:
-              [📥 Scripts-${{ github.event.inputs.project }} v${{ steps.version.outputs.release_version }} Release](https://github.com/${{ github.repository }}/releases/tag/$RELEASE_TAG")  
+              [📥 Scripts-${{ github.event.inputs.project }} v${{ steps.version.outputs.release_version }} Release](https://github.com/${{ github.repository }}/releases/tag/$RELEASE_TAG)  
 
               ---
 

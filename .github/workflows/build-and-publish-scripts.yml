@@ -133,7 +133,7 @@ jobs:
               ---
 
               ✅ **Stay Updated:** Follow this repository to receive notifications about new releases and updates.  
-              📢 **Feedback & Issues:** Found a bug or have a suggestion? [Create an issue](https://github.com/${{ github.repository }}/issues).  
+              📢 **Feedback & Issues:** Found a bug or have a suggestion? [Create an issue](https://github.com/${{ github.repository }}/issues)."
             
             echo "Handling latest tag..."
             if gh release view "$LATEST_TAG" &>/dev/null; then
@@ -162,4 +162,4 @@ jobs:
               ---
 
               ✅ **Stay Updated:** Follow this repository to receive notifications about new releases and updates.  
-              📢 **Feedback & Issues:** Found a bug or have a suggestion? [Create an issue](https://github.com/${{ github.repository }}/issues).  
+              📢 **Feedback & Issues:** Found a bug or have a suggestion? [Create an issue](https://github.com/${{ github.repository }}/issues)."

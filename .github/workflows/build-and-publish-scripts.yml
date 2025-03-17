@@ -164,8 +164,8 @@ jobs:
               ✅ **Stay Updated:** Follow this repository to receive notifications about new releases and updates.  
               📢 **Feedback & Issues:** Found a bug or have a suggestion? [Create an issue](https://github.com/${{ github.repository }}/issues)."
       
-      - name: Update version badge workflow
-        uses: ./.github/workflows/update-version-badge.yml
+      - name: Update version badge
+        uses: ./.github/actions/update-version-badge
         with:
           new_version: ${{ steps.version.outputs.release_version }}
           badge_path: Scripts/${{ github.event.inputs.project }}/version-badge.svg

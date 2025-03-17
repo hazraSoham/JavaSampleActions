@@ -1,3 +1,3 @@
 # JavaSampleActions
 
-![](./version-badge.svg)
+![](./Scripts/ScriptsA/version-badge.svg)

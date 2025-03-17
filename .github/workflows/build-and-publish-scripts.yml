@@ -164,23 +164,9 @@ jobs:
               ✅ **Stay Updated:** Follow this repository to receive notifications about new releases and updates.  
               📢 **Feedback & Issues:** Found a bug or have a suggestion? [Create an issue](https://github.com/${{ github.repository }}/issues)."
       
-      - name: Update version badge
-        run: |
-          # Extract new version
-          NEW_VERSION="${{ steps.version.outputs.release_version }}"
-
-          # Define path based on selected project
-          BADGE_PATH="Scripts/${{ github.event.inputs.project }}/version-badge.svg"
-          
-          # Update SVG version text with sed
-          sed -i 's/<!-- VERSION_PLACEHOLDER -->.*<!-- VERSION_PLACEHOLDER -->/<!-- VERSION_PLACEHOLDER -->'$NEW_VERSION'<!-- VERSION_PLACEHOLDER -->/g' "$BADGE_PATH"
-
-          # Add timestamp to README.md SVG reference to prevent caching
-          # TIMESTAMP=$(date +%s)
-          # sed -i "s|${{ github.event.inputs.project }}/version-badge.svg[^)]*|${{ github.event.inputs.project }}/version-badge.svg?v=$TIMESTAMP|g" README.md
-    
-          
-          # Commit and push the updated badge
-          git add "$BADGE_PATH"
-          git commit -m "Update version badge to $NEW_VERSION" || echo "No changes to commit"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+      - name: Update version badge workflow
+        uses: ./.github/workflows/update-version-badge.yml
+        with:
+          new_version: ${{ steps.version.outputs.release_version }}
+          badge_path: Scripts/${{ github.event.inputs.project }}/version-badge.svg
+          commit_message: "Update version badge for ${{ github.event.inputs.project }}"

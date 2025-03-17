@@ -1,1 +1,3 @@
 # JavaSampleActions
+
+![](./version-badge.svg)

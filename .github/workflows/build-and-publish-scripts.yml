@@ -173,7 +173,7 @@ jobs:
           BADGE_PATH="Scripts/${{ github.event.inputs.project }}/version-badge.svg"
           
           # Update SVG version text with sed
-          sed -i 's/<text x="215" y="15" fill="#fff">.*<\/text>/<text x="215" y="15" fill="#fff">'$NEW_VERSION'<\/text>/' version-badge.svg
+          sed -i 's/<text x="215" y="15" fill="#fff">.*<\/text>/<text x="215" y="15" fill="#fff">'$NEW_VERSION'<\/text>/' "$BADGE_PATH"
           
           # Commit and push the updated badge
           git add "$BADGE_PATH"

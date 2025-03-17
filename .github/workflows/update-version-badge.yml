@@ -1,0 +1,51 @@
+name: Update Version Badge
+
+# Define inputs for the workflow
+on:
+  workflow_call:
+    inputs:
+      new_version:
+        required: true
+        type: string
+        description: 'New version number to update in badge'
+      badge_path:
+        required: true
+        type: string
+        description: 'Path to the SVG badge file'
+      readme_path:
+        required: false
+        type: string
+        description: 'Path to README.md file'
+        default: 'README.md'
+      commit_message:
+        required: false
+        type: string
+        description: 'Custom commit message'
+        default: 'Update version badge'
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Configure Git user
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          
+      - name: Update version badge
+        run: |
+          # Extract new version
+          NEW_VERSION="${{ inputs.new_version }}"
+          
+          # Update SVG version text with sed
+          sed -i 's/<!-- VERSION_PLACEHOLDER -->.*<!-- VERSION_PLACEHOLDER -->/<!-- VERSION_PLACEHOLDER -->'$NEW_VERSION'<!-- VERSION_PLACEHOLDER -->/g' "${{ inputs.badge_path }}"
+          
+          # Commit changes
+          git add "${{ inputs.badge_path }}"
+          git commit -m "${{ inputs.commit_message }} to $NEW_VERSION" || echo "No changes to commit"
+          git push origin HEAD:${GITHUB_REF#refs/heads/}

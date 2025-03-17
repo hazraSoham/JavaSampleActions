@@ -176,8 +176,8 @@ jobs:
           sed -i 's/<text x="215" y="15" fill="#fff">.*<\/text>/<text x="215" y="15" fill="#fff">'$NEW_VERSION'<\/text>/' "$BADGE_PATH"
 
           # Add timestamp to README.md SVG reference to prevent caching
-          TIMESTAMP=$(date +%s)
-          sed -i "s|${{ github.event.inputs.project }}/version-badge.svg[^)]*|${{ github.event.inputs.project }}/version-badge.svg?v=$TIMESTAMP|g" README.md
+          # TIMESTAMP=$(date +%s)
+          # sed -i "s|${{ github.event.inputs.project }}/version-badge.svg[^)]*|${{ github.event.inputs.project }}/version-badge.svg?v=$TIMESTAMP|g" README.md
     
           
           # Commit and push the updated badge

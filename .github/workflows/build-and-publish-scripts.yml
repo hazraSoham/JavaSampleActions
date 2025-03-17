@@ -163,3 +163,16 @@ jobs:
 
               ✅ **Stay Updated:** Follow this repository to receive notifications about new releases and updates.  
               📢 **Feedback & Issues:** Found a bug or have a suggestion? [Create an issue](https://github.com/${{ github.repository }}/issues)."
+      
+      - name: Update version badge
+        run: |
+          # Extract new version
+          NEW_VERSION="${{ steps.version.outputs.release_version }}"
+          
+          # Update SVG version text with sed
+          sed -i 's/<text x="215" y="15" fill="#fff">.*<\/text>/<text x="215" y="15" fill="#fff">'$NEW_VERSION'<\/text>/' version-badge.svg
+          
+          # Commit and push the updated badge
+          git add version-badge.svg
+          git commit -m "Update version badge to $NEW_VERSION" || echo "No changes to commit"
+          git push origin HEAD:${GITHUB_REF#refs/heads/}

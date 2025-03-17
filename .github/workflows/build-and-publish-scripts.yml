@@ -173,7 +173,7 @@ jobs:
           BADGE_PATH="Scripts/${{ github.event.inputs.project }}/version-badge.svg"
           
           # Update SVG version text with sed
-          sed -i 's/<text x="215" y="15" fill="#fff">.*<\/text>/<text x="215" y="15" fill="#fff">'$NEW_VERSION'<\/text>/' "$BADGE_PATH"
+          sed -i 's/<!-- VERSION_PLACEHOLDER -->.*<!-- VERSION_PLACEHOLDER -->/<!-- VERSION_PLACEHOLDER -->'$NEW_VERSION'<!-- VERSION_PLACEHOLDER -->/g' "$BADGE_PATH"
 
           # Add timestamp to README.md SVG reference to prevent caching
           # TIMESTAMP=$(date +%s)
